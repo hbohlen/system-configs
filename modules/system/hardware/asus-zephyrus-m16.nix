@@ -8,7 +8,7 @@
   ];
 
   # Use the CachyOS kernel for optimal performance and hardware support
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  # boot.kernelPackages = inputs.cachyos.legacyPackages.${pkgs.system}.linuxPackages_cachyos;
 
   # NVIDIA Drivers with PRIME Offload
   services.xserver.videoDrivers = [ "modesetting" "nvidia" ];

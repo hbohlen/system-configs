@@ -9,10 +9,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    cachyos.url = "github:CachyOS/cachyos-nixpkgs";
+    # cachyos.url = "github:CachyOS/cachyos-nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, nixos-hardware, cachyos,... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, nixos-hardware,... }@inputs: {
     nixosConfigurations = {
       "zephyrus-m16" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
