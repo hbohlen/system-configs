@@ -14,6 +14,9 @@
     inputs.nixos-hardware.nixosModules.common-pc-ssd
   ];
 
+  # Kernel parameters for Micron SSD compatibility
+  boot.kernelParams = [ "nvme.noacpi=1" ];
+
   # Use the CachyOS kernel for optimal performance and hardware support
   # boot.kernelPackages = inputs.cachyos.legacyPackages.${pkgs.system}.linuxPackages_cachyos;
 
