@@ -19,28 +19,14 @@ echo "--> Partitioning ${DISK}..."
 # Wipe the disk
 sgdisk --zap-all "${DISK}"
 
-# Create partitions with fdisk for better kernel update
-fdisk "${DISK}" << EOF
-g
-n
-1
-1M
-1G
-t
-1
-n
-2
-1G
-33G
-t
-2
-20
-n
-3
-33G
-
-w
-EOF
+# Create partitions with cgdisk for device-specific compatibility
+echo "Using cgdisk for partitioning. Follow the prompts:"
+echo "1. Press 'o' to create a new GPT table."
+echo "2. Press 'n' for new partition: Partition number: 1, First sector: 2048, Size: 1G, Type: ef00"
+echo "3. Press 'n' for new partition: Partition number: 2, First sector: default, Size: 32G, Type: 8200"
+echo "4. Press 'n' for new partition: Partition number: 3, First sector: default, Size: default, Type: 8300"
+echo "5. Press 'w' to write and quit."
+cgdisk "${DISK}"
 
 # Inform the kernel of partition changes
 partprobe "${DISK}"
