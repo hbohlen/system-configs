@@ -23,8 +23,11 @@ parted --script "${DISK}" -- mklabel gpt \
   mkpart root ext4 33GiB 100%
 parted --script "${DISK}" -- set 1 esp on
 
+# Inform the kernel of partition changes
+partprobe "${DISK}"
+
 # Wait for partitions to be recognized
-sleep 2
+sleep 5
 
 # --- Formatting and Mounting ---
 echo "--> Formatting partitions..."
