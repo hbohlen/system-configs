@@ -1,0 +1,4 @@
+#./modules/system/hardware/sleep.patch
+{
+  boot.kernelPatches =;
+}
