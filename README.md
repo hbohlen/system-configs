@@ -17,12 +17,13 @@ This repository contains the NixOS configuration for my machines, managed with N
     git clone [https://github.com/hbohlen/system-configs.git](https://github.com/hbohlen/system-configs.git)
     cd system-configs
     ```
-4.  **CRITICAL:** Verify your disk name with `lsblk`. Open the `install.sh` script and ensure the `DISK` variable is correct (e.g., `/dev/nvme0n1`).
+4.  **CRITICAL:** Verify your disk name with `lsblk`. Open the installation script at `scripts/install-asus-zephyrus-m16.sh` and ensure the `DISK` variable is correct (e.g., `/dev/nvme0n1`).
 5.  Make the script executable and run it:
     ```bash
-    chmod +x install.sh
-    sudo ./install.sh
+    chmod +x scripts/install-asus-zephyrus-m16.sh
+    sudo ./scripts/install-asus-zephyrus-m16.sh
     ```
+The script will partition the drive, format it, and install the NixOS configuration from this repository.
 
 ## 🛠️ Post-Installation Management
 
