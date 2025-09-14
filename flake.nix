@@ -9,7 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    cachyos.url = "github:CachyOS/nixpkgs-cachyos";
+    cachyos.url = "github:CachyOS/cachyos-nixpkgs";
   };
 
   outputs = { self, nixpkgs, home-manager, nixos-hardware, cachyos,... }@inputs: {
