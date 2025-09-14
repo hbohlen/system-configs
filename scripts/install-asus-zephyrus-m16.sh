@@ -16,11 +16,31 @@ echo "===================================================================="
 read -p "Press ENTER to continue or Ctrl+C to abort."
 
 echo "--> Partitioning ${DISK}..."
+# Wipe the disk
 sgdisk --zap-all "${DISK}"
-sgdisk -n 1:1MiB:1GiB -t 1:ef00 -n 2:1GiB:33GiB -t 2:8200 -n 3:33GiB: -t 3:8300 "${DISK}"
 
-# Inform the kernel of partition changes
-partprobe "${DISK}"
+# Create partitions with fdisk for better kernel update
+fdisk "${DISK}" << EOF
+g
+n
+1
+1M
+1G
+t
+1
+n
+2
+1G
+33G
+t
+2
+20
+n
+3
+33G
+
+w
+EOF
 
 # Inform the kernel of partition changes
 partprobe "${DISK}"
