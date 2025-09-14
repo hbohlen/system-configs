@@ -1,21 +1,27 @@
+#./flake.nix
 {
-  description = "Multi-device NixOS configurations";
+  description = "Hayden's Declarative NixOS Configurations";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    cachyos.url = "github:CachyOS/nixpkgs-cachyos";
+  };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs, home-manager, nixos-hardware, cachyos,... }@inputs: {
     nixosConfigurations = {
-      laptop = nixpkgs.lib.nixosSystem {
+      "zephyrus-m16" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./modules/base.nix ./modules/laptop.nix ./hardware/laptop.nix ];
-      };
-      desktop = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./modules/base.nix ./modules/desktop.nix ./hardware/desktop.nix ];
-      };
-      vps = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [ ./modules/base.nix ./modules/vps.nix ./hardware/vps.nix ];
+        specialArgs = { inherit inputs; };
+        modules =;
+          })
+          # Import the main configuration for this host
+         ./hosts/zephyrus-m16/default.nix
+        ];
       };
     };
   };
