@@ -17,11 +17,10 @@ read -p "Press ENTER to continue or Ctrl+C to abort."
 
 echo "--> Partitioning ${DISK}..."
 sgdisk --zap-all "${DISK}"
-parted --script "${DISK}" -- mklabel gpt \
-  mkpart ESP fat32 1MiB 1GiB \
-  mkpart swap linux-swap 1GiB 33GiB \
-  mkpart root ext4 33GiB 100%
-parted --script "${DISK}" -- set 1 esp on
+sgdisk -n 1:1MiB:1GiB -t 1:ef00 -n 2:1GiB:33GiB -t 2:8200 -n 3:33GiB: -t 3:8300 "${DISK}"
+
+# Inform the kernel of partition changes
+partprobe "${DISK}"
 
 # Inform the kernel of partition changes
 partprobe "${DISK}"
