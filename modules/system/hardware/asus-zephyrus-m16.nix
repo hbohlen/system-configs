@@ -1,32 +1,28 @@
 #./modules/system/hardware/asus-zephyrus-m16.nix
-{ config, pkgs,... }:
+{ inputs, config, pkgs,... }:
 
 {
   imports = [
     # Import the kernel patch for the 12th gen Intel suspend bug
-   ./sleep.patch
+    ./sleep.patch
+
+    # NixOS hardware modules for better compatibility
+    inputs.nixos-hardware.nixosModules.common-cpu-intel
+    inputs.nixos-hardware.nixosModules.common-gpu-nvidia
+    inputs.nixos-hardware.nixosModules.common-gpu-nvidia-prime
+    inputs.nixos-hardware.nixosModules.common-pc-laptop
+    inputs.nixos-hardware.nixosModules.common-pc-ssd
   ];
 
   # Use the CachyOS kernel for optimal performance and hardware support
   # boot.kernelPackages = inputs.cachyos.legacyPackages.${pkgs.system}.linuxPackages_cachyos;
 
-  # NVIDIA Drivers with PRIME Offload
-  services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = true;
-    open = false; # Use the proprietary driver
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-
-    prime = {
-      offload.enable = true;
-      enableOffloadCmd = true;
-      # ❗ CRITICAL: Replace these with your actual Bus IDs!
-      # Run `lspci | grep -E "VGA|3D"` in the installer to find them.
-      intelBusId = "PCI:0:2:0";    # Example: 00:02.0
-      nvidiaBusId = "PCI:1:0:0";   # Example: 01:00.0
-    };
+  # NVIDIA PRIME configuration
+  hardware.nvidia.prime = {
+    # ❗ CRITICAL: Replace these with your actual Bus IDs!
+    # Run `lspci | grep -E "VGA|3D"` in the installer to find them.
+    intelBusId = "PCI:0:2:0";    # Example: 00:02.0
+    nvidiaBusId = "PCI:1:0:0";   # Example: 01:00.0
   };
 
   # ASUS Platform Tools
