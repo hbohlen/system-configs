@@ -17,10 +17,8 @@
       "zephyrus-m16" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
-        modules =;
-          })
-          # Import the main configuration for this host
-         ./hosts/zephyrus-m16/default.nix
+        modules = [
+          ./hosts/zephyrus-m16/default.nix
         ];
       };
     };
