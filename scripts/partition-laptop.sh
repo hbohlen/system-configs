@@ -1,43 +1,62 @@
 #!/usr/bin/env bash
 set -euo pipefail
-trap 'echo "ERROR at line $LINENO. Check /tmp/nixos-install.log" >&2' ERR
 
-DISK="$1"
-LOGFILE="/tmp/nixos-install.log"
+# --- CONFIGURATION ---
+# ❗ IMPORTANT: Verify this is your target disk. Use `lsblk` to confirm.
+DISK="/dev/nvme0n1"
 
-if [[ -z "$DISK" ]]; then
-  echo "Usage: $0 /dev/nvme0n1 or /dev/sda"
-  exit 1
-fi
+# --- SCRIPT ---
+HOSTNAME="zephyrus-m16"
+GITHUB_REPO="hbohlen/system-configs"
 
-exec > >(tee -a "$LOGFILE") 2>&1
+echo "===================================================================="
+echo "⚠️ WARNING: This script will ERASE ALL DATA on ${DISK}."
+echo "Please double-check that this is the correct disk before proceeding."
+echo "===================================================================="
+read -p "Press ENTER to continue or Ctrl+C to abort."
 
-echo "Partitioning disk $DISK..."
+echo "--> Partitioning ${DISK}..."
+sgdisk --zap-all "${DISK}"
+parted --script "${DISK}" -- mklabel gpt \
+  mkpart ESP fat32 1MiB 1GiB \
+  mkpart swap linux-swap 1GiB 33GiB \
+  mkpart root ext4 33GiB 100%
+parted --script "${DISK}" -- set 1 esp on
 
-sgdisk --zap-all "$DISK"
-parted --script "$DISK" mklabel gpt
-parted --script "$DISK" \
-  mkpart ESP fat32 1MiB 1025MiB \
-  mkpart swap linux-swap 1025MiB 41825MiB \
-  mkpart primary ext4 41825MiB 100%
+# Wait for partitions to be recognized
+sleep 2
 
-parted --script "$DISK" set 1 boot on
-parted --script "$DISK" set 1 esp on
+# --- Formatting and Mounting ---
+echo "--> Formatting partitions..."
+mkfs.fat -F32 -n BOOT "${DISK}p1"
+mkswap -L SWAP "${DISK}p2"
+mkfs.ext4 -L ROOT "${DISK}p3"
 
-mkfs.fat -F32 "${DISK}p1"
-mkswap "${DISK}p2"
-swapon "${DISK}p2"
-mkfs.ext4 -F "${DISK}p3"
-
-mount "${DISK}p3" /mnt
+echo "--> Mounting filesystems..."
+mount /dev/disk/by-label/ROOT /mnt
 mkdir -p /mnt/boot
-mount "${DISK}p1" /mnt/boot
+mount /dev/disk/by-label/BOOT /mnt/boot
+swapon /dev/disk/by-label/SWAP
 
+# --- NixOS Installation ---
+echo "--> Generating hardware configuration..."
 nixos-generate-config --root /mnt
 
-# Optional: clone your config repo here
-# git clone https://github.com/youruser/system-configs.git /mnt/etc/nixos
+echo "--> Cloning configuration from GitHub..."
+# We need git to clone the repo
+nix-shell -p git --command "git clone https://github.com/${GITHUB_REPO}.git /mnt/tmp-config"
 
-nixos-install --no-root-passwd
+echo "--> Preparing final configuration..."
+# Move the generated hardware config into the cloned repo
+mv /mnt/etc/nixos/hardware-configuration.nix /mnt/tmp-config/hosts/${HOSTNAME}/
+# Replace the placeholder NixOS config with our own
+rm -rf /mnt/etc/nixos
+mv /mnt/tmp-config /mnt/etc/nixos
 
-echo "Installation complete. Logs at $LOGFILE"
+echo "--> Starting NixOS installation..."
+# The --no-root-passwd flag is important for security
+nixos-install --no-root-passwd --flake "/mnt/etc/nixos#${HOSTNAME}"
+
+echo "✅ Installation complete! The system will reboot in 10 seconds."
+sleep 10
+reboot
